@@ -1,12 +1,13 @@
 import React, { useState } from 'react'; // Import React and useState hook
 
 // MessageInput component receives the onSendMessage callback and the disabled state (when translating)
-export default function MessageInput({ onSendMessage, disabled }) {
+export default function MessageInput({ onSendMessage, disabled }: { 
+  onSendMessage: (text: string) => void; disabled: boolean }) {
   // Local state to track the text currently typed in the input field
   const [inputText, setInputText] = useState('');
 
   // Handler function triggered when the form is submitted
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     // Prevent the default form submission page-reload behavior
     e.preventDefault();
 

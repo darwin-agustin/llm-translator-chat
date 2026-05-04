@@ -8,13 +8,17 @@ import { translateText } from './services/api'; // Import the mock API or your o
 // App is the root container component that manages the core state of the complete application
 function App() {
   // STATE: Target language selection. Default is set to 'Spanish'
-  const [targetLanguage, setTargetLanguage] = useState('Spanish');
+  const [targetLanguage, setTargetLanguage] = useState('English');
 
   // STATE: The chat history array, storing objects to demarcate user queries vs LLM translations
   const [messages, setMessages] = useState([]);
 
   // STATE: Boolean tracking whether an API request (translation) is currently in-flight
   const [isTranslating, setIsTranslating] = useState(false);
+
+  // STATE: This says if a new language is saved in the database, the dropdown should be refreshed to include it. 
+  // Toggled by the sidebar when a new language is added.
+  const [refreshLanguages, setRefreshLanguages] = useState(false);
 
   // Core business logic to handle the submission of a new user message
   const handleSendMessage = async (text) => {
@@ -29,7 +33,12 @@ function App() {
       const translatedData = await translateText(text, targetLanguage);
 
       // 4. Once successful, append the translated result to the chat feed as the LLM role
-      setMessages(prev => [...prev, { role: 'llm', text: translatedData }]);
+      setMessages(prev => [...prev, { role: 'llm', text: translatedData.translatedText }]);
+
+      if (translatedData.hasNewLanguage) {
+        setRefreshLanguages(Date.now()); // Set to a unique timestamp to guarantee a state change and trigger Sidebar's useEffect
+      }
+
     } catch (error) {
       alert(error);
       // Catch network errors and display an error response bubble to the user
@@ -51,6 +60,7 @@ function App() {
         <Sidebar
           selectedLanguage={targetLanguage}
           onSelectLanguage={setTargetLanguage}
+          hasNewLanguage={refreshLanguages}
         />
       </div>
 
@@ -60,6 +70,7 @@ function App() {
         <Sidebar
           selectedLanguage={targetLanguage}
           onSelectLanguage={setTargetLanguage}
+          hasNewLanguage={refreshLanguages}
         />
       </div>
 
