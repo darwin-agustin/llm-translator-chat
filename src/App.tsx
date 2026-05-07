@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'; // Import the newly created Sidebar 
 import ChatBox from './components/ChatBox'; // Import the messages display area component
 import MessageInput from './components/MessageInput'; // Import the user text input area component
 import { translateText } from './services/api'; // Import the mock API or your own stub
+import { Message } from './interface/Message';
 
 // App is the root container component that manages the core state of the complete application
 function App() {
@@ -11,19 +12,19 @@ function App() {
   const [targetLanguage, setTargetLanguage] = useState('English');
 
   // STATE: The chat history array, storing objects to demarcate user queries vs LLM translations
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   // STATE: Boolean tracking whether an API request (translation) is currently in-flight
   const [isTranslating, setIsTranslating] = useState(false);
 
   // STATE: This says if a new language is saved in the database, the dropdown should be refreshed to include it. 
   // Toggled by the sidebar when a new language is added.
-  const [refreshLanguages, setRefreshLanguages] = useState(false);
+  const [refreshLanguages, setRefreshLanguages] = useState<number>(0);
 
   // Core business logic to handle the submission of a new user message
-  const handleSendMessage = async (text) => {
+  const handleSendMessage = async (text: string) => {
     // 1. Add the new user message to the chat array functionally to ensure latest state is preserved
-    setMessages(prev => [...prev, { role: 'user', text }]);
+    setMessages((prev: Message[]) => [...prev, { role: 'user', text }]);
 
     // 2. Set the loading flag to True to trigger the UI "Translating..." indicator
     setIsTranslating(true);
@@ -33,14 +34,13 @@ function App() {
       const translatedData = await translateText(text, targetLanguage);
 
       // 4. Once successful, append the translated result to the chat feed as the LLM role
-      setMessages(prev => [...prev, { role: 'llm', text: translatedData.translatedText }]);
+      setMessages((prev: Message[]) => [...prev, { role: 'llm', text: translatedData.translatedText }]);
 
       if (translatedData.hasNewLanguage) {
         setRefreshLanguages(Date.now()); // Set to a unique timestamp to guarantee a state change and trigger Sidebar's useEffect
       }
 
-    } catch (error) {
-      alert(error);
+    } catch (error: any) {
       // Catch network errors and display an error response bubble to the user
       setMessages(prev => [...prev, { role: 'llm', text: "Error: Could not translate your message." }]);
       console.error("Translation logic failed:", error); // Log to the developer console for debugging
